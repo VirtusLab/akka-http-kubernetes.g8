@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: $normalized_name$
+  labels:
+    app: $normalized_name$
+spec:
+  type: NodePort
+  ports:
+    - name: http-port
+      port: 9090
+      targetPort: http-port
+      protocol: TCP
+  selector:
+    app: $normalized_name$
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: $normalized_name$
+  labels:
+    app: $normalized_name$
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: $normalized_name$
+  template:
+    metadata:
+      labels:
+        app: $normalized_name$
+    spec:
+      containers:
+        - name: $normalized_name$
+          image: $normalized_name$:0.1.0-SNAPSHOT
+          env:
+            - name: JAVA_OPTS
+              value: "-XX:MaxRAMPercentage=75.0 -XX:+UseContainerSupport -XX:+HeapDumpOnOutOfMemoryError -Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.rmi.port=1098 -Dcom.sun.management.jmxremote.port=1098 -Djava.rmi.server.hostname=localhost"
+          ports:
+            - name: http-port
+              containerPort: 9090
+              protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: http-port
+              scheme: HTTP
+            initialDelaySeconds: 20
+            periodSeconds: 30
+            successThreshold: 1
+            timeoutSeconds: 1
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: http-port
+              scheme: HTTP
+            initialDelaySeconds: 20
+            periodSeconds: 30
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "200m"
+            limits:
+              memory: "2Gi"
+              cpu: "1"

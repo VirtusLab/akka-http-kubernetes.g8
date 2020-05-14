@@ -1,0 +1,15 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: $normalized_name$
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+    - host: $ingress_host$
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: $normalized_name$
+              servicePort: 9090
